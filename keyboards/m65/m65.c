@@ -118,6 +118,8 @@ static uint32_t last_ticks = 0;
 //#if defined(DYNAMIC_CONFIGURATION) || defined(MSC_ENABLE)
 void matrix_init_kb(void)
 {
+    gpio_set_output_pushpull(CAPS_LED_PIN);
+    gpio_write_pin(CAPS_LED_PIN, 1);
     gpio_set_output_pushpull(SCREEN_0_PWR);
     gpio_write_pin(SCREEN_0_PWR, SCREEN_0_PWR_EN);
 
@@ -227,10 +229,10 @@ void led_set(uint8_t led)
 {
     if (led & (1 << USB_LED_CAPS_LOCK)) {
         amk_printf("turn caps on\n");
-        gpio_write_pin(CAPS_LED_PIN, 1);
+        gpio_write_pin(CAPS_LED_PIN, 0);
     } else {
         amk_printf("turn caps off\n");
-        gpio_write_pin(CAPS_LED_PIN, 0);
+        gpio_write_pin(CAPS_LED_PIN, 1);
     }
 }
 
