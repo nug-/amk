@@ -9,7 +9,7 @@
 #include "led.h"
 #include "amk_gpio.h"
 #include "usb_descriptors.h"
-
+#include "wait.h"
 
 #ifdef DYNAMIC_CONFIGURATION
 extern RTC_HandleTypeDef hrtc;
@@ -20,7 +20,6 @@ static void reset_to_msc(bool msc);
 #include "screen.h"
 #include "fractal.h"
 #endif
-
 
 #ifdef MSC_ENABLE
 #include "mscusb.h"
@@ -60,6 +59,7 @@ static uint16_t anim_buf[ANIM_WIDTH*ANIM_HEIGHT];
 #define AUXI_HEIGHT     30
 static uint16_t auxi_buf[AUXI_WIDTH*AUXI_HEIGHT];
 
+static bool screen_enable = true;
 static bool first_screen = true;
 static bool filling = false;
 static render_t renders[] = {
@@ -115,9 +115,29 @@ rgb_param_t g_rgb_linear_params[RGB_SEGMENT_NUM] = {
 
 static uint32_t last_ticks = 0;
 
+#ifdef SCREEN_ENABLE
+static void set_screen_state(bool enable)
+{
+    if (enable) {
+        gpio_set_output_pushpull(SCREEN_0_PWR);
+        gpio_write_pin(SCREEN_0_PWR, SCREEN_0_PWR_EN);
+        wait_ms(1);
+        screen_init();
+    } else {
+        gpio_set_output_pushpull(SCREEN_0_PWR);
+        gpio_write_pin(SCREEN_0_PWR, !SCREEN_0_PWR_EN);
+        wait_ms(1);
+    }
+}
+#endif
+
 //#if defined(DYNAMIC_CONFIGURATION) || defined(MSC_ENABLE)
 void matrix_init_kb(void)
 {
+#ifdef SCREEN_ENABLE
+    set_screen_state(screen_enable);
+#endif
+
     gpio_set_output_pushpull(SCREEN_0_PWR);
     gpio_write_pin(SCREEN_0_PWR, SCREEN_0_PWR_EN);
 
@@ -249,6 +269,10 @@ bool hook_process_action_main(keyrecord_t *record)
     }
 
     switch(action.key.code) {
+        case KC_F16:
+            screen_enable = !screen_enable;
+            set_screen_state(screen_enable);
+            return true;
         case KC_F20:
             first_screen = !first_screen;
             return true;

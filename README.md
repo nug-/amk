@@ -11,6 +11,10 @@ git clone https://github.com/yulei/amk.git
 cd amk
 git submodule init
 git submodule update
+cd libs/vendor
+git submodule init
+git submodule update
+cd ../..
 make onekey
 ```
 
